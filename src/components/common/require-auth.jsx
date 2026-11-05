@@ -25,7 +25,7 @@ function RequireAuth({ children }) {
   }
 
   if (!session) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/auth" replace state={{ from: location.pathname }} />;
   }
 
   return children;

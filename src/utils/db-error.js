@@ -31,6 +31,15 @@ export function toKoreanErrorMessage(error) {
   if (message.includes('rate limit')) {
     return '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.';
   }
+  if (message.includes('provider is not enabled') || message.includes('Unsupported provider')) {
+    return '이 로그인 방식은 아직 활성화되지 않았습니다. Supabase 대시보드 > Authentication > Providers 에서 켜 주세요.';
+  }
+  if (message.includes('phone provider') || message.includes('SMS')) {
+    return '휴대폰 문자 인증이 아직 설정되지 않았습니다. Supabase 대시보드에서 SMS 공급자를 연결해 주세요.';
+  }
+  if (message.includes('Token has expired')) {
+    return '인증번호가 올바르지 않거나 만료되었습니다.';
+  }
   if (message.includes('check constraint')) {
     return '입력값이 허용 범위를 벗어났습니다. 글자 수를 확인해 주세요.';
   }

@@ -1,83 +1,65 @@
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Avatar from '@mui/material/Avatar';
-import Tooltip from '@mui/material/Tooltip';
-import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined';
-import LogoutIcon from '@mui/icons-material/Logout';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import { useAuth } from '../../hooks/use-auth.js';
+import Toolbar from '@mui/material/Toolbar';
+import MenuIcon from '@mui/icons-material/Menu';
+import LoginBanner from './login-banner.jsx';
+import SideMenu from './side-menu.jsx';
 
 /**
- * AppHeader 컴포넌트 - 상단 바 (로고, 글쓰기, 프로필, 로그아웃)
+ * AppHeader 컴포넌트 - 좌측 햄버거 메뉴(하양) / 가운데 타이틀 / 우측 원형 로그인 배너
  *
- * Props: 없음
+ * Props:
+ * @param {boolean} isTitleHidden - 가운데 타이틀 숨김 여부 (홈 히어로에 큰 타이틀이 있을 때) [Optional, 기본값: false]
  *
  * Example usage:
- * <AppHeader />
+ * <AppHeader isTitleHidden />
  */
-function AppHeader() {
-  const { session, profile, signOut } = useAuth();
+function AppHeader({ isTitleHidden = false }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/login');
-  };
-
   return (
-    <AppBar position="sticky" color="inherit" elevation={ 1 }>
-      <Toolbar sx={{ gap: 1, px: { xs: 2, md: 3 } }}>
-        <Box
-          component={ RouterLink }
-          to="/"
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            color: 'primary.main',
-            textDecoration: 'none',
-            fontWeight: 700,
-            fontSize: { xs: '1.1rem', md: '1.3rem' },
-            flexGrow: 1,
-          }}
-        >
-          <FitnessCenterIcon />
-          mini_sns
-        </Box>
+    <>
+      <AppBar position="sticky" elevation={ 0 } sx={{ bgcolor: 'primary.main' }}>
+        <Toolbar sx={{ minHeight: { xs: 64 }, px: { xs: 1, md: 2 }, gap: 1 }}>
+          <IconButton
+            aria-label="메뉴 열기"
+            onClick={ () => setIsMenuOpen(true) }
+            sx={{ color: 'common.white', width: 48, height: 48 }}
+          >
+            <MenuIcon sx={{ fontSize: 30 }} />
+          </IconButton>
 
-        { session ? (
-          <>
-            <Tooltip title="새 게시물">
-              <IconButton component={ RouterLink } to="/new" color="primary" aria-label="새 게시물">
-                <AddBoxOutlinedIcon />
-              </IconButton>
-            </Tooltip>
-            { profile && (
-              <Tooltip title="내 프로필">
-                <IconButton component={ RouterLink } to={ `/profile/${profile.id}` } aria-label="내 프로필">
-                  <Avatar src={ profile.avatar_url || undefined } sx={{ width: 32, height: 32 }}>
-                    { profile.display_name?.[0] }
-                  </Avatar>
-                </IconButton>
-              </Tooltip>
-            ) }
-            <Tooltip title="로그아웃">
-              <IconButton onClick={ handleSignOut } aria-label="로그아웃">
-                <LogoutIcon />
-              </IconButton>
-            </Tooltip>
-          </>
-        ) : (
-          <Button component={ RouterLink } to="/login" variant="contained">
-            로그인
-          </Button>
-        ) }
-      </Toolbar>
-    </AppBar>
+          <Box
+            component="button"
+            type="button"
+            onClick={ () => navigate('/') }
+            sx={{
+              flexGrow: 1,
+              border: 0,
+              bgcolor: 'transparent',
+              color: 'common.white',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              fontWeight: 900,
+              fontSize: { xs: '1rem', md: '1.15rem' },
+              letterSpacing: '-0.01em',
+              visibility: isTitleHidden ? 'hidden' : 'visible',
+            }}
+          >
+            Healthy Muscle <Box component="span" sx={{ color: 'secondary.main' }}>Making</Box>
+          </Box>
+
+          <Box sx={{ pr: 0.5 }}>
+            <LoginBanner />
+          </Box>
+        </Toolbar>
+      </AppBar>
+      <SideMenu isOpen={ isMenuOpen } onClose={ () => setIsMenuOpen(false) } />
+    </>
   );
 }
 

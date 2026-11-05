@@ -87,8 +87,6 @@ function CommentSection({ postId, onCountChange }) {
       { comments.map((comment) => (
         <Box key={ comment.id } sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
           <Avatar
-            component={ RouterLink }
-            to={ `/profile/${comment.user_id}` }
             src={ comment.users?.avatar_url || undefined }
             sx={{ width: 28, height: 28, fontSize: '0.8rem' }}
           >
@@ -122,13 +120,13 @@ function CommentSection({ postId, onCountChange }) {
             inputProps={{ maxLength: 500, 'aria-label': '댓글 입력' }}
             sx={{ flexGrow: 1, fontSize: '0.875rem' }}
           />
-          <Button type="submit" size="small" disabled={ !content.trim() || isSubmitting }>
+          <Button type="submit" size="small" color="secondary" disabled={ !content.trim() || isSubmitting }>
             게시
           </Button>
         </Box>
       ) : (
         <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-          <RouterLink to="/login">로그인</RouterLink>하고 댓글을 남겨보세요.
+          <RouterLink to="/auth">로그인</RouterLink>하고 댓글을 남겨보세요.
         </Box>
       ) }
     </Box>
