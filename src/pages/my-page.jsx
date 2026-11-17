@@ -18,6 +18,7 @@ import {
   BODY_PART_OPTIONS,
   findLabel,
   GENDER_OPTIONS,
+  toGoalList,
   GOAL_OPTIONS,
 } from '../utils/body-analysis.js';
 import { formatFullDate } from '../utils/format-date.js';
@@ -116,7 +117,7 @@ function MyPage() {
                 `${body.heightCm}cm`,
                 `${body.weightKg}kg`,
                 `${body.age}세`,
-                findLabel(GOAL_OPTIONS, body.goal),
+                ...toGoalList(body.goal).map((goal) => findLabel(GOAL_OPTIONS, goal)),
                 `주 ${body.weeklyCount}회`,
                 ...body.targetParts.map((part) => findLabel(BODY_PART_OPTIONS, part)),
               ].map((label, index) => (

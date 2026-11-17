@@ -7,6 +7,7 @@ import Link from '@mui/material/Link';
 import AnalysisReport from '../components/onboarding/analysis-report.jsx';
 import NumberPicker from '../components/onboarding/number-picker.jsx';
 import OptionList from '../components/onboarding/option-list.jsx';
+import SelectAllBanner from '../components/onboarding/select-all-banner.jsx';
 import StepLayout from '../components/onboarding/step-layout.jsx';
 import { useAuth } from '../hooks/use-auth.js';
 import { useBodyProfile } from '../hooks/use-body-profile.js';
@@ -14,8 +15,12 @@ import {
   BODY_PART_OPTIONS,
   GENDER_OPTIONS,
   GOAL_OPTIONS,
+  toGoalList,
   WEEKLY_COUNT_OPTIONS,
 } from '../utils/body-analysis.js';
+
+const ALL_GOAL_VALUES = GOAL_OPTIONS.map((option) => option.value);
+const ALL_BODY_PART_VALUES = BODY_PART_OPTIONS.map((option) => option.value);
 
 const TOTAL_STEPS = 8;
 const ANALYZE_STEP = 7;
@@ -25,7 +30,7 @@ const INITIAL_BODY = {
   heightCm: 170,
   weightKg: 65,
   age: 25,
-  goal: '',
+  goal: [],
   targetParts: [],
   weeklyCount: 0,
 };
@@ -51,7 +56,8 @@ function OnboardingPage() {
   /** 다시 분석하는 경우 이전에 입력한 값을 기본값으로 */
   useEffect(() => {
     if (savedBody && !hasLoadedSaved) {
-      setBody(savedBody);
+      /** 예전에 하나만 골라 저장한 운동 목표(문자열)도 배열로 맞춘다 */
+      setBody({ ...savedBody, goal: toGoalList(savedBody.goal) });
       setHasLoadedSaved(true);
     }
   }, [savedBody, hasLoadedSaved]);
@@ -115,10 +121,21 @@ function OnboardingPage() {
     },
     {
       title: '운동 목표가 무엇인가요?',
-      description: '가장 중요한 목표 하나를 골라주세요.',
-      isValid: Boolean(body.goal),
+      description: '여러 개 선택할 수 있어요.',
+      isValid: body.goal.length > 0,
       content: (
-        <OptionList options={ GOAL_OPTIONS } value={ body.goal } onChange={ (value) => updateBody('goal', value) } />
+        <>
+          <OptionList
+            options={ GOAL_OPTIONS }
+            value={ body.goal }
+            isMultiple
+            onChange={ (value) => updateBody('goal', value) }
+          />
+          <SelectAllBanner
+            isChecked={ body.goal.length === ALL_GOAL_VALUES.length }
+            onToggle={ (isChecked) => updateBody('goal', isChecked ? ALL_GOAL_VALUES : []) }
+          />
+        </>
       ),
     },
     {
@@ -126,13 +143,19 @@ function OnboardingPage() {
       description: '여러 개 선택할 수 있어요.',
       isValid: body.targetParts.length > 0,
       content: (
-        <OptionList
-          options={ BODY_PART_OPTIONS }
-          value={ body.targetParts }
-          isMultiple
-          columns={ 2 }
-          onChange={ (value) => updateBody('targetParts', value) }
-        />
+        <>
+          <OptionList
+            options={ BODY_PART_OPTIONS }
+            value={ body.targetParts }
+            isMultiple
+            columns={ 2 }
+            onChange={ (value) => updateBody('targetParts', value) }
+          />
+          <SelectAllBanner
+            isChecked={ body.targetParts.length === ALL_BODY_PART_VALUES.length }
+            onToggle={ (isChecked) => updateBody('targetParts', isChecked ? ALL_BODY_PART_VALUES : []) }
+          />
+        </>
       ),
     },
     {

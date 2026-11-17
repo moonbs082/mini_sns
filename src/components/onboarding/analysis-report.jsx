@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import SectionTitle from '../ui/section-title.jsx';
 import StatCard from '../ui/stat-card.jsx';
 import WeeklyPlan from '../workout/weekly-plan.jsx';
-import { analyzeBody, findLabel, GOAL_OPTIONS } from '../../utils/body-analysis.js';
+import { analyzeBody, formatGoalLabels } from '../../utils/body-analysis.js';
 import { recommendExercises } from '../../utils/exercise-data.js';
 import { buildWeeklySchedule } from '../../utils/workout-schedule.js';
 
@@ -44,7 +44,7 @@ function AnalysisReport({ body, isCompact = false }) {
           </Grid>
         </Grid>
         <Box sx={{ mt: 1.5, p: 2, borderRadius: 3, bgcolor: 'brown.light', fontSize: '0.9rem', lineHeight: 1.6 }}>
-          <strong>{ findLabel(GOAL_OPTIONS, body.goal) }</strong> 목표라면 하루{ ' ' }
+          <strong>{ formatGoalLabels(body.goal) }</strong> 목표라면 하루{ ' ' }
           <Box component="strong" sx={{ color: 'secondary.main' }}>{ result.targetCalories.toLocaleString() } kcal</Box>
           { ' ' }정도 섭취를 권장해요.
         </Box>

@@ -47,6 +47,43 @@ export function findLabel(options, value) {
   return options.find((option) => option.value === value)?.label ?? '-';
 }
 
+/** 운동 목표를 모두 선택했을 때 DB 에 저장하는 값 (goal 컬럼 30자 제한 대응) */
+const ALL_GOALS_TEXT = 'all';
+
+/**
+ * 운동 목표 값을 배열로 변환 (예전 단일 문자열 / 쉼표 문자열 / 'all' / 배열 모두 지원)
+ * @param {string|string[]} goal - 운동 목표
+ * @returns {string[]}
+ */
+export function toGoalList(goal) {
+  if (Array.isArray(goal)) return goal;
+  if (!goal) return [];
+  if (goal === ALL_GOALS_TEXT) return GOAL_OPTIONS.map((option) => option.value);
+  return goal.split(',').filter(Boolean);
+}
+
+/**
+ * 운동 목표 배열을 DB 저장용 문자열로 변환 (전체 선택이면 'all')
+ * @param {string|string[]} goal - 운동 목표
+ * @returns {string}
+ */
+export function toGoalText(goal) {
+  const goals = toGoalList(goal);
+  if (goals.length === GOAL_OPTIONS.length) return ALL_GOALS_TEXT;
+  return goals.join(',');
+}
+
+/**
+ * 운동 목표 라벨을 '·' 로 이어서 표시
+ * @param {string|string[]} goal - 운동 목표
+ * @returns {string}
+ */
+export function formatGoalLabels(goal) {
+  const goals = toGoalList(goal);
+  if (goals.length === 0) return '-';
+  return goals.map((value) => findLabel(GOAL_OPTIONS, value)).join('·');
+}
+
 /**
  * 주간 운동 횟수별 활동 계수
  * @param {number} weeklyCount - 주간 운동 횟수
@@ -72,11 +109,11 @@ function getBmiCategory(bmi) {
 }
 
 /**
- * 목표별 하루 권장 섭취 칼로리 조정값
+ * 목표 하나의 하루 권장 섭취 칼로리 조정값
  * @param {string} goal - 운동 목표
  * @returns {number}
  */
-function getCalorieAdjustment(goal) {
+function getSingleCalorieAdjustment(goal) {
   if (goal === 'diet') return -500;
   if (goal === 'muscle') return 300;
   if (goal === 'strength') return 200;
@@ -84,12 +121,25 @@ function getCalorieAdjustment(goal) {
 }
 
 /**
+ * 선택한 목표들의 칼로리 조정값 평균 (예: 감량 + 근육 증가 → 소폭 감량)
+ * @param {string[]} goals - 운동 목표 목록
+ * @returns {number}
+ */
+function getCalorieAdjustment(goals) {
+  if (goals.length === 0) return 0;
+  const total = goals.reduce((sum, goal) => sum + getSingleCalorieAdjustment(goal), 0);
+  return total / goals.length;
+}
+
+/**
  * 맞춤 분석 결과 계산
- * @param {{ gender: string, heightCm: number, weightKg: number, age: number, goal: string, targetParts: string[], weeklyCount: number }} body - 신체 정보
+ * @param {{ gender: string, heightCm: number, weightKg: number, age: number, goal: string|string[], targetParts: string[], weeklyCount: number }} body - 신체 정보
  * @returns {object} 분석 결과
  */
 export function analyzeBody(body) {
-  const { gender, heightCm, weightKg, age, goal, weeklyCount } = body;
+  const { gender, heightCm, weightKg, age, weeklyCount } = body;
+  const goals = toGoalList(body.goal);
+  const isMuscleGoal = goals.includes('muscle') || goals.includes('strength');
 
   const bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + (gender === 'male' ? 5 : -161);
   const tdee = bmr * getActivityFactor(weeklyCount);
@@ -116,8 +166,8 @@ export function analyzeBody(body) {
   return {
     bmr: Math.round(bmr),
     tdee: Math.round(tdee),
-    targetCalories: Math.round(tdee + getCalorieAdjustment(goal)),
-    proteinGram: Math.round(weightKg * (goal === 'muscle' || goal === 'strength' ? 1.8 : 1.4)),
+    targetCalories: Math.round(tdee + getCalorieAdjustment(goals)),
+    proteinGram: Math.round(weightKg * (isMuscleGoal ? 1.8 : 1.4)),
     bmi: Math.round(bmi * 10) / 10,
     bmiCategory: getBmiCategory(bmi),
     strengthTimeline,

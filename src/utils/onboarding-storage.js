@@ -2,6 +2,8 @@
  * 온보딩(신체 정보 입력) 결과 브라우저 저장
  * - 회원가입 전에 입력한 정보를 보관했다가, 로그인되면 body_profiles 테이블에 저장한다.
  */
+import { toGoalList, toGoalText } from './body-analysis.js';
+
 const STORAGE_KEY = 'hmm_onboarding';
 
 /**
@@ -42,7 +44,7 @@ export function toBodyProfileRow(body, userId) {
     height_cm: body.heightCm,
     weight_kg: body.weightKg,
     age: body.age,
-    goal: body.goal,
+    goal: toGoalText(body.goal),
     target_parts: body.targetParts,
     weekly_count: body.weeklyCount,
     updated_at: new Date().toISOString(),
@@ -60,7 +62,7 @@ export function fromBodyProfileRow(row) {
     heightCm: Number(row.height_cm),
     weightKg: Number(row.weight_kg),
     age: row.age,
-    goal: row.goal,
+    goal: toGoalList(row.goal),
     targetParts: row.target_parts ?? [],
     weeklyCount: row.weekly_count,
   };
